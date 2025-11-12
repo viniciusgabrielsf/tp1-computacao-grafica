@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(BoidsSimulation VERSION 1.0 LANGUAGES CXX)
+project(BoidsSimulation VERSION 1.0 LANGUAGES CXX C)
 
 # C++17 padrão
 set(CMAKE_CXX_STANDARD 17)
@@ -36,7 +36,7 @@ set(HEADERS
 )
 
 # Cria executável
-add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+add_executable(${PROJECT_NAME} ${SOURCES})
 
 # Diretórios de include
 target_include_directories(${PROJECT_NAME} PRIVATE

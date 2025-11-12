@@ -133,6 +133,9 @@ int main() {
                                                  (float)SCR_WIDTH / (float)SCR_HEIGHT,
                                                  0.1f, 200.0f);
 
+        // shadowcolor
+        glm::vec4 shadowColor = glm::vec4(0.0f, 0.0f, 0.0f, 0.3f);
+
         // Ativa shader principal
         boidShader.use();
         boidShader.setMat4("view", view);
@@ -178,7 +181,9 @@ int main() {
             shadowShader.use();
             shadowShader.setMat4("view", view);
             shadowShader.setMat4("projection", projection);
-            shadowShader.setVec4("shadowColor", 0.0f, 0.0f, 0.0f, 0.3f);
+
+
+            shadowShader.setVec4("shadowColor", shadowColor);
 
             float groundY = 0.0f;
             for (auto* boid : flock->boids) {
