@@ -1,0 +1,3 @@
+/home/vinicius/projetos/ufmg/tp1-computacao-grafica/build/CMakeFiles/BoidsSimulation.dir
+/home/vinicius/projetos/ufmg/tp1-computacao-grafica/build/CMakeFiles/edit_cache.dir
+/home/vinicius/projetos/ufmg/tp1-computacao-grafica/build/CMakeFiles/rebuild_cache.dir
