@@ -19,6 +19,12 @@ const unsigned int SCR_HEIGHT = 720;
 Camera* camera = nullptr;
 Flock* flock = nullptr;
 
+// VAOs globais
+unsigned int g_groundVAO = 0;
+unsigned int g_coneVAO = 0;
+unsigned int g_sphereVAO = 0;
+int g_coneIndexCount = 0;
+
 // Timing
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
@@ -35,7 +41,7 @@ void renderTower(Shader& shader, const glm::mat4& view, const glm::mat4& project
 void renderObstacles(Shader& shader, const glm::mat4& view, const glm::mat4& projection,
                      const std::vector<Obstacle>& obstacles);
 unsigned int createGroundVAO();
-unsigned int createConeVAO(int segments = 32);
+unsigned int createConeVAO(int segments, int* indexCount);
 unsigned int createSphereVAO(int segments = 32);
 
 int main() {
@@ -87,9 +93,9 @@ int main() {
     flock = new Flock(20, 50.0f);
 
     // Cria VAOs para mundo
-    unsigned int groundVAO = createGroundVAO();
-    unsigned int coneVAO = createConeVAO();
-    unsigned int sphereVAO = createSphereVAO();
+    g_groundVAO = createGroundVAO();
+    g_coneVAO = createConeVAO(32, &g_coneIndexCount);
+    g_sphereVAO = createSphereVAO();
 
     std::cout << "\n=== BOIDS SIMULATION ===" << std::endl;
     std::cout << "Controls:" << std::endl;
@@ -206,9 +212,9 @@ int main() {
     // Limpeza
     delete camera;
     delete flock;
-    glDeleteVertexArrays(1, &groundVAO);
-    glDeleteVertexArrays(1, &coneVAO);
-    glDeleteVertexArrays(1, &sphereVAO);
+    glDeleteVertexArrays(1, &g_groundVAO);
+    glDeleteVertexArrays(1, &g_coneVAO);
+    glDeleteVertexArrays(1, &g_sphereVAO);
 
     glfwTerminate();
     return 0;
@@ -281,8 +287,10 @@ void renderGround(Shader& shader, const glm::mat4& view, const glm::mat4& projec
     shader.setMat4("model", model);
     shader.setVec3("objectColor", 0.2f, 0.5f, 0.2f);  // Verde escuro
 
-    // Renderiza plano do chão (criado em createGroundVAO)
-    // Implementação será feita via VAO
+    // Renderiza plano do chão
+    glBindVertexArray(g_groundVAO);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
 }
 
 void renderTower(Shader& shader, const glm::mat4& view, const glm::mat4& projection) {
@@ -292,8 +300,10 @@ void renderTower(Shader& shader, const glm::mat4& view, const glm::mat4& project
     shader.setMat4("model", model);
     shader.setVec3("objectColor", 0.6f, 0.6f, 0.6f);  // Cinza
 
-    // Renderiza cone (criado em createConeVAO)
-    // Implementação será feita via VAO
+    // Renderiza cone
+    glBindVertexArray(g_coneVAO);
+    glDrawElements(GL_TRIANGLES, g_coneIndexCount, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
 }
 
 void renderObstacles(Shader& shader, const glm::mat4& view, const glm::mat4& projection,
@@ -354,10 +364,91 @@ unsigned int createGroundVAO() {
     return VAO;
 }
 
-unsigned int createConeVAO(int segments) {
-    // Implementação simplificada de cone
-    // Retorna VAO do cone
-    return 0;  // Placeholder
+unsigned int createConeVAO(int segments, int* indexCount) {
+    std::vector<float> vertices;
+    std::vector<unsigned int> indices;
+
+    // Vértice do topo do cone (apex)
+    vertices.push_back(0.0f);  // x
+    vertices.push_back(1.0f);  // y (altura normalizada)
+    vertices.push_back(0.0f);  // z
+    vertices.push_back(0.0f);  // normal x
+    vertices.push_back(1.0f);  // normal y
+    vertices.push_back(0.0f);  // normal z
+
+    // Vértices da base circular
+    for (int i = 0; i <= segments; i++) {
+        float angle = (float)i / (float)segments * 2.0f * 3.14159265359f;
+        float x = cos(angle);
+        float z = sin(angle);
+
+        // Posição
+        vertices.push_back(x);
+        vertices.push_back(0.0f);  // Base no y=0
+        vertices.push_back(z);
+
+        // Normal (aproximada para as faces laterais)
+        float nx = x;
+        float ny = 0.5f;  // Inclinação do cone
+        float nz = z;
+        float len = sqrt(nx*nx + ny*ny + nz*nz);
+        vertices.push_back(nx / len);
+        vertices.push_back(ny / len);
+        vertices.push_back(nz / len);
+    }
+
+    // Centro da base (para fechar a base)
+    vertices.push_back(0.0f);
+    vertices.push_back(0.0f);
+    vertices.push_back(0.0f);
+    vertices.push_back(0.0f);
+    vertices.push_back(-1.0f);  // Normal apontando para baixo
+    vertices.push_back(0.0f);
+
+    // Índices para faces laterais
+    for (int i = 0; i < segments; i++) {
+        indices.push_back(0);           // Vértice do topo
+        indices.push_back(i + 1);       // Vértice atual da base
+        indices.push_back(i + 2);       // Próximo vértice da base
+    }
+
+    // Índices para a base (triângulos do centro para a borda)
+    int centerIndex = segments + 2;
+    for (int i = 0; i < segments; i++) {
+        indices.push_back(centerIndex);
+        indices.push_back(i + 2);
+        indices.push_back(i + 1);
+    }
+
+    unsigned int VAO, VBO, EBO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
+
+    // Atributo de posição
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // Atributo de normal
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    glBindVertexArray(0);
+
+    // Armazena o número de índices
+    if (indexCount) {
+        *indexCount = indices.size();
+    }
+
+    return VAO;
 }
 
 unsigned int createSphereVAO(int segments) {
