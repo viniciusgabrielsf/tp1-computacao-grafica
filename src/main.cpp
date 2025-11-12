@@ -182,26 +182,60 @@ int main() {
             flock->targetBoid->render(view, projection);
         }
 
-        // Renderiza sombras (projeção paralela simples)
+        // Renderiza sombras (projeção paralela simples no chão)
         if (flock->enableShadows) {
             shadowShader.use();
             shadowShader.setMat4("view", view);
             shadowShader.setMat4("projection", projection);
-
-
             shadowShader.setVec4("shadowColor", shadowColor);
 
-            float groundY = 0.0f;
+            // Desabilita escrita no depth buffer para evitar z-fighting
+            glDepthMask(GL_FALSE);
+
+            float groundY = 0.01f;  // Pequeno offset para evitar z-fighting com o chão
+
+            // Renderiza sombras dos boids normais
             for (auto* boid : flock->boids) {
-                glm::mat4 model = boid->getModelMatrix();
-                // Projeção paralela no chão (y = 0)
-                glm::mat4 shadowMatrix = glm::mat4(1.0f);
-                shadowMatrix = glm::translate(shadowMatrix, glm::vec3(0.0f, groundY - boid->position.y + 0.1f, 0.0f));
-                shadowMatrix = glm::scale(shadowMatrix, glm::vec3(1.0f, 0.0f, 1.0f));  // Achata no eixo Y
-                model = model * shadowMatrix;
-                shadowShader.setMat4("model", model);
+                // Cria matriz de projeção paralela no chão
+                glm::mat4 shadowModel = glm::mat4(1.0f);
+
+                // Posiciona a sombra no chão, mantendo x e z do boid
+                shadowModel = glm::translate(shadowModel, glm::vec3(boid->position.x, groundY, boid->position.z));
+
+                // Aplica rotação apenas em Y (yaw) para orientar a sombra
+                if (glm::length(boid->velocity) > 0.001f) {
+                    glm::vec3 forward = glm::normalize(boid->velocity);
+                    float yaw = atan2(forward.x, forward.z);
+                    shadowModel = glm::rotate(shadowModel, yaw, glm::vec3(0.0f, 1.0f, 0.0f));
+                }
+
+                // Achata completamente no eixo Y (projeção paralela)
+                shadowModel = glm::scale(shadowModel, glm::vec3(0.5f, 0.0f, 0.5f));
+
+                shadowShader.setMat4("model", shadowModel);
                 boid->renderShadow(view, projection, groundY);
             }
+
+            // Renderiza sombra do boid-objetivo
+            if (flock->targetBoid) {
+                glm::mat4 shadowModel = glm::mat4(1.0f);
+
+                shadowModel = glm::translate(shadowModel, glm::vec3(flock->targetBoid->position.x, groundY, flock->targetBoid->position.z));
+
+                if (glm::length(flock->targetBoid->velocity) > 0.001f) {
+                    glm::vec3 forward = glm::normalize(flock->targetBoid->velocity);
+                    float yaw = atan2(forward.x, forward.z);
+                    shadowModel = glm::rotate(shadowModel, yaw, glm::vec3(0.0f, 1.0f, 0.0f));
+                }
+
+                shadowModel = glm::scale(shadowModel, glm::vec3(0.5f, 0.0f, 0.5f));
+
+                shadowShader.setMat4("model", shadowModel);
+                flock->targetBoid->renderShadow(view, projection, groundY);
+            }
+
+            // Re-habilita escrita no depth buffer
+            glDepthMask(GL_TRUE);
         }
 
         // Troca buffers e processa eventos
