@@ -170,8 +170,10 @@ glm::vec3 Flock::getFlockVelocity() const {
 void Flock::controlTarget(glm::vec3 direction, float deltaTime) {
     if (!targetBoid) return;
 
-    float acceleration = 20.0f;
-    targetBoid->acceleration += direction * acceleration * deltaTime;
+    // Aplica força de controle na direção desejada
+    // O deltaTime será aplicado no update() do boid, não aqui
+    float controlForce = 2.0f;
+    targetBoid->acceleration += direction * controlForce;
 }
 
 void Flock::addObstacle(const Obstacle& obstacle) {
