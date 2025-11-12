@@ -132,6 +132,62 @@ void Boid::updateWingAnimation(float deltaTime) {
     if (wingState > 1.0f) {
         wingState = 0.0f;
     }
+
+    // Atualiza a geometria das asas com a nova posição
+    updateWingGeometry();
+}
+
+void Boid::updateWingGeometry() {
+    // Calcula o ângulo de rotação das asas baseado no wingState
+    // Usa seno para movimento suave de cima para baixo
+    float wingAngle = sin(wingState * 2.0f * 3.14159265359f) * 0.5f; // -0.5 a +0.5 radianos (~28 graus)
+
+    // Posições base das asas (sem animação)
+    // Asa Esquerda
+    float leftWingTipX = -2.0f;
+    float leftWingTipY = 0.0f;
+    float leftWingBaseX = -0.5f;
+    float leftWingBaseY = 0.3f;
+
+    // Asa Direita
+    float rightWingTipX = 2.0f;
+    float rightWingTipY = 0.0f;
+    float rightWingBaseX = 0.5f;
+    float rightWingBaseY = 0.3f;
+
+    // Aplica rotação nas asas
+    // A rotação é em torno do ponto de junção com o corpo
+
+    // Asa Esquerda - vértice 5 (ponta da asa)
+    // Índice no array: 5 * 6 = 30
+    float leftWingDeltaX = leftWingTipX - leftWingBaseX;
+    float leftWingDeltaY = leftWingTipY - leftWingBaseY;
+
+    // Aplica rotação
+    vertices[30] = leftWingBaseX + leftWingDeltaX * cos(wingAngle) - leftWingDeltaY * sin(wingAngle);
+    vertices[31] = leftWingBaseY + leftWingDeltaX * sin(wingAngle) + leftWingDeltaY * cos(wingAngle);
+
+    // Vértice 8 (topo da base da asa esquerda) - também se move um pouco
+    // Índice no array: 8 * 6 = 48
+    vertices[49] = leftWingBaseY + wingAngle * 0.3f; // Move levemente para cima/baixo
+
+    // Asa Direita - vértice 9 (ponta da asa)
+    // Índice no array: 9 * 6 = 54
+    float rightWingDeltaX = rightWingTipX - rightWingBaseX;
+    float rightWingDeltaY = rightWingTipY - rightWingBaseY;
+
+    // Aplica rotação
+    vertices[54] = rightWingBaseX + rightWingDeltaX * cos(wingAngle) - rightWingDeltaY * sin(wingAngle);
+    vertices[55] = rightWingBaseY + rightWingDeltaX * sin(wingAngle) + rightWingDeltaY * cos(wingAngle);
+
+    // Vértice 12 (topo da base da asa direita) - também se move um pouco
+    // Índice no array: 12 * 6 = 72
+    vertices[73] = rightWingBaseY + wingAngle * 0.3f; // Move levemente para cima/baixo
+
+    // Atualiza o buffer VBO com a nova geometria
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(float), vertices.data());
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void Boid::calculateBanking(float deltaTime) {

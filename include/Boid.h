@@ -115,6 +115,12 @@ public:
     void updateWingAnimation(float deltaTime);
 
     /**
+     * Atualiza a geometria das asas baseado no estado de animação
+     * Aplica rotação nas asas para simular batimento
+     */
+    void updateWingGeometry();
+
+    /**
      * Calcula o ângulo de banking baseado na curvatura da trajetória
      * Banking é a rotação no eixo X (roll) relacionada à derivada segunda
      */
