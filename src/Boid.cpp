@@ -14,7 +14,7 @@ Boid::Boid(glm::vec3 pos, glm::vec3 vel, bool target)
       bankAngle(0.0f),
       isTarget(target),
       maxSpeed(target ? 15.0f : 10.0f),
-      maxForce(0.5f),
+      maxForce(0.8f),  // Aumenta para permitir respostas mais rápidas
       perceptionRadius(15.0f),  // Aumenta para melhor coesão e alinhamento
       VAO(0), VBO(0), EBO(0) {
 
@@ -68,12 +68,13 @@ void Boid::applyBehavior(const std::vector<Boid*>& boids) {
     glm::vec3 coh = cohesion(boids);
 
     // Pesos para cada comportamento (ajustáveis)
-    // Separação: evita colisões
+    // Separação: evita colisões - mantém forte para segurança
     // Coesão: mantém o bando junto
     // Alinhamento: sincroniza direção e velocidade
-    sep *= 1.5f;   // Mantém separação forte
-    ali *= 1.2f;   // Aumenta alinhamento
-    coh *= 1.3f;   // Aumenta coesão para manter bando unido
+    // Reduzidos ligeiramente para dar mais prioridade ao seguimento do objetivo
+    sep *= 1.5f;   // Mantém separação forte (segurança)
+    ali *= 1.0f;   // Alinhamento moderado
+    coh *= 1.1f;   // Coesão moderada
 
     acceleration += sep;
     acceleration += ali;
@@ -90,8 +91,9 @@ void Boid::seekTarget(const glm::vec3& target) {
         desired = glm::normalize(desired) * maxSpeed;
         glm::vec3 steer = desired - velocity;
         steer = limit(steer, maxForce);
-        // Aumenta o peso para que os boids sigam melhor o objetivo
-        acceleration += steer * 1.5f;  // Peso do comportamento de seguir
+        // Aumenta significativamente o peso para priorizar seguir o objetivo
+        // Peso maior que a soma das forças locais para garantir que o bando siga o objetivo
+        acceleration += steer * 3.5f;  // Peso do comportamento de seguir o objetivo
     }
 }
 
