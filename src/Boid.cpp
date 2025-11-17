@@ -13,7 +13,7 @@ Boid::Boid(glm::vec3 pos, glm::vec3 vel, bool target)
       wingSpeed(5.0f),
       bankAngle(0.0f),
       isTarget(target),
-      maxSpeed(target ? 30.0f : 15.0f),
+      maxSpeed(target ? 15.0f : 10.0f),
       maxForce(0.8f),  // Aumenta para permitir respostas mais rápidas
       perceptionRadius(15.0f),  // Aumenta para melhor coesão e alinhamento
       VAO(0), VBO(0), EBO(0) {
