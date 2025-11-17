@@ -487,7 +487,6 @@ unsigned int createConeVAO(int segments, int* indexCount) {
 }
 
 unsigned int createSphereVAO(int segments) {
-    // Implementação simplificada de esfera
-    // Retorna VAO da esfera
+    // TODO implementar criação de esfera qdo for adicionar obstaculos esféricos
     return 0;  // Placeholder
 }

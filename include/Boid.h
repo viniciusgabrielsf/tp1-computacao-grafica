@@ -10,7 +10,7 @@ struct Obstacle {
     glm::vec3 position;
     float radius;  // Para esferas
     float height;  // Para cones
-    enum Type { SPHERE, CONE } type;
+    enum Type { SPHERE, CONE, CILINDER } type;
 };
 
 /**

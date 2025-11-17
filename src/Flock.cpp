@@ -20,14 +20,14 @@ Flock::Flock(int initialBoidCount, float bounds)
     initialize(initialBoidCount);
 
 
-    // TODO remover obstaculos, desisti de implementar
+    // TODO adicionar os obstaculos se a colisão der certo, por enquanto desisti de implementar pq não ta funfando
     // Adiciona alguns obstáculos (requisito extra)
     // Esferas
-    obstacles.push_back({glm::vec3(15.0f, 5.0f, 15.0f), 3.0f, 0.0f, Obstacle::SPHERE});
-    obstacles.push_back({glm::vec3(-15.0f, 8.0f, -15.0f), 2.5f, 0.0f, Obstacle::SPHERE});
+    // obstacles.push_back({glm::vec3(15.0f, 5.0f, 15.0f), 3.0f, 0.0f, Obstacle::SPHERE});
+    // obstacles.push_back({glm::vec3(-15.0f, 8.0f, -15.0f), 2.5f, 0.0f, Obstacle::SPHERE});
 
     // Cones (além da torre central)
-    obstacles.push_back({glm::vec3(20.0f, 0.0f, -20.0f), 3.0f, 10.0f, Obstacle::CONE});
+    // obstacles.push_back({glm::vec3(20.0f, 0.0f, -20.0f), 3.0f, 10.0f, Obstacle::CONE});
 
     std::cout << "Flock initialized with " << boids.size() << " boids" << std::endl;
 }
