@@ -1,4 +1,4 @@
-# Notas de Implementação - Simulação de Boids
+# Detalhes de Implementação - Simulação de Boids
 
 ## Visão Geral
 
@@ -368,42 +368,6 @@ void Boid::updateWingAnimation(float deltaTime) {
 
 Cada boid tem estado independente (inicializado aleatoriamente).
 
-## Performance
-
-### Otimizações Implementadas
-
-1. **Spatial Hashing** (não implementado, mas recomendado)
-   - Atual: O(n²) para busca de vizinhos
-   - Otimizado: O(n) com grid espacial
-
-2. **Frustum Culling** (não implementado)
-   - Renderizar apenas boids visíveis
-
-3. **Level of Detail** (não implementado)
-   - Geometria simplificada para boids distantes
-
-### Complexidade Atual
-
-- **Update**: O(n²) - cada boid verifica todos os outros
-- **Render**: O(n) - renderização linear
-
-**Para N=20 boids**: ~400 comparações/frame
-**Para N=100 boids**: ~10,000 comparações/frame
-
-### Melhorias Sugeridas
-
-```cpp
-// Implementar grid espacial
-class SpatialGrid {
-    map<GridCell, vector<Boid*>> cells;
-
-    vector<Boid*> getNeighbors(vec3 position, float radius) {
-        // Retorna apenas boids nas células próximas
-        // Reduz de O(n) para O(k) onde k << n
-    }
-};
-```
-
 ## Parâmetros Ajustáveis
 
 ### Comportamento de Boids
@@ -443,71 +407,6 @@ vec4 shadowColor = vec4(0, 0, 0, 0.3);
 float shininess = 32.0f;
 ```
 
-## Extensões Possíveis
-
-### 1. Predador-Presa
-
-Adicionar um boid predador que persegue o bando:
-
-```cpp
-class Predator : public Boid {
-    void hunt(const Flock& prey);
-};
-```
-
-### 2. Formações Específicas
-
-Implementar formações (V, linha, círculo):
-
-```cpp
-enum Formation { V_SHAPE, LINE, CIRCLE };
-void Flock::setFormation(Formation f);
-```
-
-### 3. Trajetórias Pré-definidas
-
-Waypoints que o bando deve seguir:
-
-```cpp
-vector<vec3> waypoints;
-int currentWaypoint = 0;
-```
-
-### 4. Diferentes Tipos de Boids
-
-```cpp
-enum BoidType { FAST, SLOW, HEAVY, LIGHT };
-```
-
-### 5. Renderização Avançada
-
-- Instanced Rendering para muitos boids
-- Shadow Mapping para sombras realistas
-- Particle Systems para penas/rastros
-
-## Testes e Depuração
-
-### Modo Debug
-
-```cpp
-// Adicionar ao main.cpp
-bool debugMode = false;  // Ativar com tecla D
-
-if (debugMode) {
-    // Renderizar raios de percepção
-    // Mostrar vetores de força
-    // Imprimir estatísticas
-}
-```
-
-### Estatísticas Úteis
-
-```cpp
-cout << "FPS: " << 1.0f / deltaTime << endl;
-cout << "Boids: " << flock.boids.size() << endl;
-cout << "Avg Speed: " << length(flock.getFlockVelocity()) << endl;
-```
-
 ## Conclusão
 
 Este projeto implementa todos os requisitos básicos (80%) e extras (20%) especificados:
@@ -529,7 +428,3 @@ Este projeto implementa todos os requisitos básicos (80%) e extras (20%) especi
 - ✅ Pausa/Step (5%)
 - ✅ Reshape (5%)
 - ✅ Banking (10%)
-
-**Total**: 100% dos requisitos implementados
-
-A arquitetura é extensível e permite adicionar facilmente novas funcionalidades.
