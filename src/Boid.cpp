@@ -116,17 +116,53 @@ void Boid::avoidObstacles(const std::vector<Obstacle>& obstacles) {
 }
 
 void Boid::stayInBounds(float bounds) {
-    float turnForce = 1.0f;
+    // realiza um bounce suave nas paredes do cubo delimitador (chao, teto e paredes)
+    const float radius = 0.5f;   // boid radius 
+    const float damping = 0.85f; // lose a bit of speed on impact
 
-    // Repele das bordas
-    if (position.x > bounds) acceleration.x -= turnForce;
-    if (position.x < -bounds) acceleration.x += turnForce;
-    if (position.z > bounds) acceleration.z -= turnForce;
-    if (position.z < -bounds) acceleration.z += turnForce;
+    const float minX = -bounds + radius;
+    const float maxX =  bounds - radius;
+    const float minZ = -bounds + radius;
+    const float maxZ =  bounds - radius;
+    const float minY = 0.0f + radius;   // ground a y=0
+    const float maxY = bounds - radius; // teto a y=bounds
 
-    // Mantém acima do chão e abaixo de um teto
-    if (position.y < 2.0f) acceleration.y += turnForce;
-    if (position.y > bounds * 0.8f) acceleration.y -= turnForce;
+    // eixo X
+    if (position.x < minX) {
+        position.x = minX;
+        if (velocity.x < 0.0f) velocity.x = -velocity.x * damping;
+    } else if (position.x > maxX) {
+        position.x = maxX;
+        if (velocity.x > 0.0f) velocity.x = -velocity.x * damping;
+    }
+
+    // eixo Y (up)
+    if (position.y < minY) {
+        position.y = minY;
+        if (velocity.y < 0.0f) velocity.y = -velocity.y * damping;
+    } else if (position.y > maxY) {
+        position.y = maxY;
+        if (velocity.y > 0.0f) velocity.y = -velocity.y * damping;
+    }
+
+    // eixo Z
+    if (position.z < minZ) {
+        position.z = minZ;
+        if (velocity.z < 0.0f) velocity.z = -velocity.z * damping;
+    } else if (position.z > maxZ) {
+        position.z = maxZ;
+        if (velocity.z > 0.0f) velocity.z = -velocity.z * damping;
+    }
+
+    // Suave direcionamento para longe das paredes quando próximo para evitar ficar preso
+    const float steerMargin = 5.0f;
+    const float steerForce = 0.6f;
+    if (position.x - (-bounds) < steerMargin) acceleration.x += steerForce;
+    if (bounds - position.x < steerMargin)    acceleration.x -= steerForce;
+    if (position.z - (-bounds) < steerMargin) acceleration.z += steerForce;
+    if (bounds - position.z < steerMargin)    acceleration.z -= steerForce;
+    if (position.y - 0.0f < steerMargin)      acceleration.y += steerForce;
+    if (bounds - position.y < steerMargin)    acceleration.y -= steerForce;
 }
 
 void Boid::updateWingAnimation(float deltaTime) {
