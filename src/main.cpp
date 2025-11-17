@@ -178,10 +178,11 @@ int main() {
         if (flock->targetBoid) {
             glm::mat4 model = flock->targetBoid->getModelMatrix();
             boidShader.setMat4("model", model);
-            boidShader.setVec3("objectColor", 0.2f, 0.8f, 0.3f);  // Cor verde
+            boidShader.setVec3("objectColor", 0.8f, 0.8f, 0.2f);  // Cor amarela
             flock->targetBoid->render(view, projection);
         }
 
+        // TODO passar as renderizacoes para as respectivas classes no futuro
         // Renderiza sombras (projeção paralela simples no chão)
         if (flock->enableShadows) {
             shadowShader.use();

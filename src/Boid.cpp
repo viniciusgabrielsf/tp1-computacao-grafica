@@ -142,7 +142,8 @@ void Boid::updateWingAnimation(float deltaTime) {
 void Boid::updateWingGeometry() {
     // Calcula o ângulo de rotação das asas baseado no wingState
     // Usa seno para movimento suave de cima para baixo
-    float wingAngle = sin(wingState * 2.0f * 3.14159265359f) * 0.5f; // -0.5 a +0.5 radianos (~28 graus)
+    float pi = 3.14159265359f;
+    float wingAngle = sin(wingState * 2.0f * pi) * 0.5f; // -0.5 a +0.5 radianos ( marromeno 28 graus)
 
     // Posições base das asas (sem animação)
     // Asa Esquerda
@@ -239,9 +240,6 @@ glm::mat4 Boid::getModelMatrix() {
         // Banking (Roll): rotação no eixo de movimento
         model = glm::rotate(model, bankAngle, glm::vec3(0.0f, 0.0f, 1.0f));
     }
-
-    // Animação das asas (rotação das pirâmides laterais)
-    // Isso será aplicado na geometria
 
     // Escala
     model = glm::scale(model, glm::vec3(0.5f));
@@ -348,7 +346,7 @@ glm::vec3 Boid::limit(glm::vec3 vec, float max) {
 // ===== GEOMETRIA E RENDERIZAÇÃO =====
 
 void Boid::createGeometry() {
-    // Modelo de 5 pirâmides conforme enunciado
+    // Modelo de 5 pirâmides
     // Centro + 4 pirâmides nas laterais formando um corpo de pássaro
 
     // Vértices: posição (x, y, z) e normal (nx, ny, nz)

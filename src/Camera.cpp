@@ -27,7 +27,7 @@ void Camera::UpdateCamera(const glm::vec3& flockCenter, const glm::vec3& flockVe
 
     switch(mode) {
         case TOWER_VIEW: {
-            // Modo 1: Olho no alto da torre, olhando para o centro do bando
+            // Modo 1: Olho no alto da torre, olhando para o bando
             Position = towerPosition + glm::vec3(0.0f, towerHeight, 0.0f);
             Front = glm::normalize(flockCenter - Position);
             Up = WorldUp;
@@ -40,7 +40,7 @@ void Camera::UpdateCamera(const glm::vec3& flockCenter, const glm::vec3& flockVe
             // Adiciona pequeno offset vertical para melhor visualização
             Position = flockCenter - flockDirection * distanceBehind + glm::vec3(0.0f, 5.0f, 0.0f);
             Front = glm::normalize(flockCenter - Position);
-            Up = WorldUp;  // Sempre perpendicular ao chão
+            Up = WorldUp;
             break;
         }
 
@@ -63,7 +63,7 @@ void Camera::UpdateCamera(const glm::vec3& flockCenter, const glm::vec3& flockVe
             // Posiciona a câmera ao lado do bando, no mesmo plano horizontal (ou próximo)
             Position = flockCenter + sideDirection * distanceSide + glm::vec3(0.0f, 2.0f, 0.0f);
             Front = glm::normalize(flockCenter - Position);
-            Up = WorldUp;  // Sempre perpendicular ao chão
+            Up = WorldUp;
             break;
         }
     }
@@ -95,11 +95,10 @@ void Camera::SetMode(CameraMode newMode) {
 }
 
 void Camera::updateCameraVectors() {
-    // IMPORTANTE: O Up deve sempre ser perpendicular ao plano do chão (WorldUp)
-    // conforme especificação: "com a normal apontando perpendicular ao plano do chão"
+    // O Up deve sempre ser perpendicular ao plano do chão (WorldUp)
     Up = WorldUp;
 
     // Recalcula o vetor Right (perpendicular a WorldUp e Front)
-    // Usamos cross(Front, Up) para obter a direita correta
+    // Usando cross(Front, Up) para obter a direita correta
     Right = glm::normalize(glm::cross(Front, Up));
 }

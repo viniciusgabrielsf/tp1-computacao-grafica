@@ -19,6 +19,8 @@ Flock::Flock(int initialBoidCount, float bounds)
     // Inicializa o bando
     initialize(initialBoidCount);
 
+
+    // TODO remover obstaculos, desisti de implementar
     // Adiciona alguns obstáculos (requisito extra)
     // Esferas
     obstacles.push_back({glm::vec3(15.0f, 5.0f, 15.0f), 3.0f, 0.0f, Obstacle::SPHERE});
