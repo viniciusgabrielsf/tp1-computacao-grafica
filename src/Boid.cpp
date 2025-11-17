@@ -13,7 +13,7 @@ Boid::Boid(glm::vec3 pos, glm::vec3 vel, bool target)
       wingSpeed(5.0f),
       bankAngle(0.0f),
       isTarget(target),
-      maxSpeed(target ? 15.0f : 10.0f),
+      maxSpeed(target ? 30.0f : 15.0f),
       maxForce(0.8f),  // Aumenta para permitir respostas mais rápidas
       perceptionRadius(15.0f),  // Aumenta para melhor coesão e alinhamento
       VAO(0), VBO(0), EBO(0) {
@@ -68,13 +68,12 @@ void Boid::applyBehavior(const std::vector<Boid*>& boids) {
     glm::vec3 coh = cohesion(boids);
 
     // Pesos para cada comportamento (ajustáveis)
-    // Separação: evita colisões - mantém forte para segurança
+    // Separação: evita colisões - está muito maior pra evitar que eles se sobreponham
     // Coesão: mantém o bando junto
     // Alinhamento: sincroniza direção e velocidade
-    // Reduzidos ligeiramente para dar mais prioridade ao seguimento do objetivo
-    sep *= 1.5f;   // Mantém separação forte (segurança)
+    sep *= 30.0f;   // Mantém separação forte (segurança)
     ali *= 1.0f;   // Alinhamento moderado
-    coh *= 1.1f;   // Coesão moderada
+    coh *= 1.0f;   // Coesão moderada
 
     acceleration += sep;
     acceleration += ali;

@@ -28,7 +28,7 @@ void Camera::UpdateCamera(const glm::vec3& flockCenter, const glm::vec3& flockVe
     switch(mode) {
         case TOWER_VIEW: {
             // Modo 1: Olho no alto da torre, olhando para o bando
-            Position = towerPosition + glm::vec3(0.0f, towerHeight, 0.0f);
+            Position = towerPosition + glm::vec3(0.0f, towerHeight + 5.0f, 0.0f);
             Front = glm::normalize(flockCenter - Position);
             Up = WorldUp;
             break;
