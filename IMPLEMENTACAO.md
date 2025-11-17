@@ -11,12 +11,14 @@ Este documento descreve detalhes técnicos da implementação do projeto de Boid
 #### 1. Boid (Boid.h / Boid.cpp)
 
 Representa um único pássaro virtual com:
+
 - **Posição e Velocidade**: Vetores 3D (glm::vec3)
 - **Aceleração**: Acumulada a cada frame pelas regras de comportamento
 - **Estado de Animação**: `wingState` para batimento de asas
 - **Ângulo de Banking**: Rotação roll calculada pela curvatura
 
 **Métodos Principais:**
+
 - `applyBehavior()`: Aplica as 3 regras (separação, coesão, alinhamento)
 - `seekTarget()`: Comportamento de seguir o boid-objetivo
 - `avoidObstacles()`: Evita colisão com obstáculos
@@ -24,21 +26,24 @@ Representa um único pássaro virtual com:
 - `update()`: Integração física (Euler)
 
 **Parâmetros Ajustáveis:**
+
 ```cpp
 float maxSpeed = 10.0f;        // Velocidade máxima
-float maxForce = 0.5f;         // Força máxima de steering
-float perceptionRadius = 5.0f; // Raio de percepção de vizinhos
+float maxForce = 0.8f;         // Força máxima de steering
+float perceptionRadius = 15.0f; // Raio de percepção de vizinhos
 ```
 
 #### 2. Flock (Flock.h / Flock.cpp)
 
 Gerencia o bando completo:
+
 - Vetor de ponteiros para Boids
 - Boid-objetivo especial
 - Lista de obstáculos
 - Estados globais (pausa, fog, sombras)
 
 **Responsabilidades:**
+
 - Criar/remover boids dinamicamente
 - Atualizar todos os boids
 - Gerenciar obstáculos
@@ -49,16 +54,19 @@ Gerencia o bando completo:
 Implementa 3 modos de visualização:
 
 **Modo 1 - Torre (TOWER_VIEW):**
+
 - Posição fixa no topo da torre
 - Sempre olha para o centro do bando
 - Melhor para visão geral da simulação
 
 **Modo 2 - Atrás (BEHIND_FLOCK):**
+
 - Segue o bando a uma distância fixa
 - Posicionada atrás da direção de movimento
 - Perspectiva de "perseguição"
 
 **Modo 3 - Lateral (SIDE_VIEW):**
+
 - Perpendicular ao vetor velocidade
 - Paralelo ao chão
 - Útil para visualizar comportamento lateral
@@ -66,6 +74,7 @@ Implementa 3 modos de visualização:
 #### 4. Shader (Shader.h / Shader.cpp)
 
 Classe utilitária para:
+
 - Carregar shaders de arquivos
 - Compilar e linkar programas
 - Setar uniforms facilmente
@@ -93,9 +102,10 @@ glm::vec3 Boid::separation(const std::vector<Boid*>& boids) {
 ```
 
 **Características:**
+
 - Força inversamente proporcional à distância
 - Apenas vizinhos dentro de `desiredSeparation`
-- Peso ajustável (padrão: 1.5x)
+- Peso ajustável (padrão: 30x)
 
 ### 2. Coesão
 
@@ -112,6 +122,7 @@ glm::vec3 Boid::cohesion(const std::vector<Boid*>& boids) {
 ```
 
 **Características:**
+
 - Calcula centro de massa local
 - Considera apenas vizinhos dentro de `perceptionRadius`
 - Steering suave em direção ao centro
@@ -130,6 +141,7 @@ glm::vec3 Boid::alignment(const std::vector<Boid*>& boids) {
 ```
 
 **Características:**
+
 - Média vetorial das velocidades
 - Normalizada para velocidade máxima
 - Produz movimento coordenado
@@ -167,6 +179,7 @@ void Boid::calculateBanking(float deltaTime) {
 ```
 
 **Detalhes Importantes:**
+
 - Sistema de coordenadas: X=frente, Y=cima, Z=lado
 - Banking é rotação em torno do eixo X (forward)
 - Suavização previne mudanças bruscas
@@ -303,35 +316,6 @@ model = boid.getModelMatrix() * shadowMatrix;
 - Shader separado para performance
 - Offset pequeno (0.1) para evitar z-fighting
 
-## Obstáculos
-
-Sistema de evasão implementado:
-
-```cpp
-void Boid::avoidObstacles(const vector<Obstacle>& obstacles) {
-    for (cada obstáculo) {
-        float distance = length(position - obstacle.position);
-        float avoidDistance = obstacle.radius + margem;
-
-        if (distance < avoidDistance) {
-            // Força repulsiva inversamente proporcional
-            vec3 avoidForce = normalize(position - obstacle.position);
-            avoidForce /= distance;
-            avoidForce *= maxForce * 2.0f;  // Força alta
-
-            acceleration += avoidForce;
-        }
-    }
-}
-```
-
-### Tipos de Obstáculos
-
-1. **Esferas**: Raio simples
-2. **Cones**: Aproximação por cilindro
-
-**Nota**: Boid-objetivo é fantasma (atravessa obstáculos)
-
 ## Geometria do Boid
 
 Modelo de 5 pirâmides conforme especificação:
@@ -374,13 +358,13 @@ Cada boid tem estado independente (inicializado aleatoriamente).
 
 ```cpp
 // Em Boid.cpp
-float separationWeight = 1.5f;
+float separationWeight = 30f;
 float alignmentWeight = 1.0f;
 float cohesionWeight = 1.0f;
-float targetWeight = 0.5f;
+float targetWeight = 3.5f;
 
 float desiredSeparation = 2.0f;
-float perceptionRadius = 5.0f;
+float perceptionRadius = 15.0f;
 ```
 
 ### Física
@@ -406,25 +390,3 @@ float fogDensity = 0.02f;
 vec4 shadowColor = vec4(0, 0, 0, 0.3);
 float shininess = 32.0f;
 ```
-
-## Conclusão
-
-Este projeto implementa todos os requisitos básicos (80%) e extras (20%) especificados:
-
-**Básicos:**
-- ✅ Lógica de Boids (separação, coesão, alinhamento)
-- ✅ Boid-objetivo controlável
-- ✅ Mundo com chão e torre
-- ✅ Modelo 3D (5 pirâmides)
-- ✅ Animação de asas
-- ✅ Controles +/-
-- ✅ Iluminação Phong
-- ✅ 3 modos de câmera
-
-**Extras:**
-- ✅ Obstáculos (10%)
-- ✅ Sombras (5%)
-- ✅ Fog (5%)
-- ✅ Pausa/Step (5%)
-- ✅ Reshape (5%)
-- ✅ Banking (10%)

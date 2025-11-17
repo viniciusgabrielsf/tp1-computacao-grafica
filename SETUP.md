@@ -44,6 +44,21 @@ cd vcpkg
 
 GLAD é um loader de funções OpenGL que precisa ser configurado manualmente.
 
+```bash
+Nota: Isto já foi feito pelos desenvolvedores, os arquivos do glad devem estar na seguinte estrutura:
+
+external/glad/
+├── include/
+│   ├── glad/
+│   │   └── glad.h
+│   └── KHR/
+│       └── khrplatform.h
+└── src/
+    └── glad.c
+
+caso esses arquivos não estejam, siga os seguintes passos:
+```
+
 ### Baixar GLAD
 
 1. Acesse: https://glad.dav1d.de/
@@ -52,7 +67,7 @@ GLAD é um loader de funções OpenGL que precisa ser configurado manualmente.
    - **Specification**: OpenGL
    - **API gl**: Version 3.3 ou superior
    - **Profile**: Core
-   - **Extensions**: (deixe as opções padrão)
+   - **Extensions**: (deixe as opções padrão, que adicionam todas as extensões)
 3. Marque: "Generate a loader"
 4. Clique em **GENERATE**
 5. Clique em **glad.zip** para baixar
@@ -88,6 +103,7 @@ chmod +x install_glad.sh
 ```
 
 Este script irá:
+
 1. Baixar GLAD automaticamente
 2. Extrair na estrutura correta
 3. Limpar arquivos temporários
@@ -179,6 +195,14 @@ Se tudo estiver configurado corretamente:
 - Pressione **C** para alternar entre câmeras
 - Pressione **+** para adicionar boids
 - Pressione **-** para remover boids
-- Use **WASD** para controlar o boid-objetivo
 - Pressione **F** para ligar/desligar fog
 - Pressione **H** para ligar/desligar sombras
+
+### Testes do Boid-Objetivo
+
+- **W / Seta para Cima**: Move para frente (eixo Z+)
+- **S / Seta para Baixo**: Move para trás (eixo Z-)
+- **A / Seta para Esquerda**: Move para esquerda (eixo X+)
+- **D / Seta para Direita**: Move para direita (eixo X+)
+- **Q**: Move para cima (eixo Y+)
+- **E**: Move para baixo (eixo Y-)

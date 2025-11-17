@@ -5,6 +5,7 @@ Simulação de bando de pássaros virtuais (Boids) em ambiente 3D usando C++, Op
 ## Descrição
 
 Este projeto implementa uma simulação de Boids que seguem três regras principais:
+
 - **Separação**: Mantêm distância mínima dos vizinhos
 - **Coesão**: Mantêm-se unidos no bando
 - **Alinhamento**: Movem-se na mesma direção e velocidade
@@ -49,17 +50,20 @@ tp1-computacao-grafica/
 ### Instalação de Dependências
 
 #### macOS (Homebrew)
+
 ```bash
 brew install cmake glfw glm
 ```
 
 #### Ubuntu/Debian
+
 ```bash
 sudo apt-get update
 sudo apt-get install cmake libglfw3-dev libglm-dev build-essential
 ```
 
 #### Windows (vcpkg)
+
 ```bash
 vcpkg install glfw3:x64-windows glm:x64-windows
 ```
@@ -128,35 +132,38 @@ Release/BoidsSimulation.exe
 ## Controles
 
 ### Controle do Boid-Objetivo
-- **W / Seta para Cima**: Move para frente
-- **S / Seta para Baixo**: Move para trás
-- **A / Seta para Esquerda**: Move para esquerda
-- **D / Seta para Direita**: Move para direita
+
+- **W / Seta para Cima**: Move para frente (eixo Z+)
+- **S / Seta para Baixo**: Move para trás (eixo Z-)
+- **A / Seta para Esquerda**: Move para esquerda (eixo X+)
+- **D / Seta para Direita**: Move para direita (eixo X+)
 - **Q**: Move para cima (eixo Y+)
 - **E**: Move para baixo (eixo Y-)
 
 ### Câmera
+
 - **C**: Alterna entre os 3 modos de câmera:
   1. **Torre**: Visão do alto da torre central
   2. **Atrás do Bando**: Segue atrás do bando
   3. **Lateral**: Vista perpendicular ao movimento
 
 ### Gerenciamento de Boids
+
 - **+ (ou =)**: Adiciona um boid ao bando
-- **- (ou _)**: Remove um boid do bando
+- **- (ou \_)**: Remove um boid do bando
 
 ### Funcionalidades Extras
+
 - **P**: Pausa/Resume a simulação
 - **N**: Avança um passo (quando pausado)
 - **F**: Liga/Desliga névoa (fog)
 - **H**: Liga/Desliga sombras
 
 ### Geral
+
 - **ESC**: Sair da aplicação
 
 ## Funcionalidades Implementadas
-
-### Requisitos Básicos (80%)
 
 1. ✅ **Lógica Boids**: Separação, Coesão e Alinhamento
 2. ✅ **Boid-Objetivo**: Controlável via teclado
@@ -166,15 +173,11 @@ Release/BoidsSimulation.exe
 6. ✅ **Controles**: Adicionar (+) e remover (-) boids
 7. ✅ **Iluminação**: Modelo Phong com ambiente, difusa e especular
 8. ✅ **3 Modos de Câmera**: Torre, Atrás, Lateral
-
-### Requisitos Extras (20%)
-
-1. ✅ **Obstáculos (10%)**: Esferas e cones na cena que boids evitam
-2. ✅ **Sombras (5%)**: Projeção paralela simples no chão
-3. ✅ **Fog (5%)**: Névoa habilitável via tecla F
-4. ✅ **Modo Pausa (5%)**: Pausa (P) e passo-a-passo (N)
-5. ✅ **Reshape (5%)**: Redimensionamento de janela
-6. ✅ **Banking (10%)**: Rotação roll baseada na curvatura
+9. ✅ **Sombras**: Projeção paralela simples no chão
+10. ✅ **Fog**: Névoa habilitável via tecla F
+11. ✅ **Modo Pausa**: Pausa (P) e passo-a-passo (N)
+12. ✅ **Reshape**: Redimensionamento de janela
+13. ✅ **Banking**: Rotação roll baseada na curvatura
 
 ## Detalhes de Implementação
 
@@ -183,11 +186,13 @@ Release/BoidsSimulation.exe
 Cada boid calcula três vetores de força:
 
 1. **Separação**: Repulsão de vizinhos próximos
+
    ```cpp
    força = soma(posição - vizinho) / distância²
    ```
 
 2. **Coesão**: Atração ao centro do bando
+
    ```cpp
    centro = média(posições dos vizinhos)
    força = direção(centro - posição)
@@ -211,18 +216,21 @@ aceleração_lateral = dot(aceleração, vetor_direita)
 ### Sistema de Câmera
 
 #### Modo 1 - Torre
+
 ```cpp
-posição = (0, altura_torre, 0)
+posição = (0, altura_torre + 5, 0)
 olhar_para = centro_do_bando
 ```
 
 #### Modo 2 - Atrás
+
 ```cpp
 posição = centro_bando - direção_bando * distância
 olhar_para = centro_do_bando
 ```
 
 #### Modo 3 - Lateral
+
 ```cpp
 lado = cross(direção_bando, vetor_cima)
 posição = centro_bando + lado * distância
@@ -232,6 +240,7 @@ olhar_para = centro_do_bando
 ### Iluminação (Phong)
 
 O modelo de iluminação implementado usa:
+
 - **Luz Ambiente**: 30% da luz total
 - **Luz Difusa**: Baseada no ângulo da normal com a luz
 - **Luz Especular**: Reflexo com shininess = 32
@@ -239,6 +248,7 @@ O modelo de iluminação implementado usa:
 ### Névoa (Fog)
 
 Fog exponencial implementado no fragment shader:
+
 ```glsl
 fogFactor = exp(-densidade * distância)
 cor_final = mix(cor_fog, cor_objeto, fogFactor)
@@ -270,12 +280,14 @@ cor_final = mix(cor_fog, cor_objeto, fogFactor)
 ### Erros de Compilação
 
 **Erro: "GLFW not found"**
+
 ```bash
 # Instale GLFW conforme instruções acima
 # Ou configure manualmente no CMakeLists.txt
 ```
 
 **Erro: "GLM not found"**
+
 ```bash
 # Instale GLM ou adicione manualmente:
 # GLM é header-only, basta copiar a pasta para include/
@@ -284,14 +296,17 @@ cor_final = mix(cor_fog, cor_objeto, fogFactor)
 ### Erros de Execução
 
 **Janela não abre**
+
 - Verifique se sua GPU suporta OpenGL 3.3+
 - Atualize drivers de vídeo
 
 **Shaders não carregam**
+
 - Verifique se a pasta `shaders/` está no mesmo diretório do executável
 - CMake copia automaticamente, mas pode ser necessário copiar manualmente
 
 **FPS baixo**
+
 - Reduza o número de boids (tecla -)
 - Desative sombras (tecla H)
 - Desative fog (tecla F)
