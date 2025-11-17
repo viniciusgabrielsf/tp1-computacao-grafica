@@ -100,16 +100,31 @@ void Boid::avoidObstacles(const std::vector<Obstacle>& obstacles) {
     if (isTarget) return;  // Boid-objetivo é fantasma
 
     for (const auto& obstacle : obstacles) {
-        glm::vec3 diff = position - obstacle.position;
-        float distance = glm::length(diff);
+        if (obstacle.type == Obstacle::SPHERE) {
+            glm::vec3 diff = position - obstacle.position;
+            float distance = glm::length(diff);
+            float avoidDistance = obstacle.radius + 3.0f;  // Margem de segurança
 
-        float avoidDistance = obstacle.radius + 3.0f;  // Margem de segurança
+            if (distance < avoidDistance && distance > 0.001f) {
+                glm::vec3 avoidForce = glm::normalize(diff) / distance;
+                avoidForce *= maxForce * 2.0f;
+                acceleration += avoidForce;
+            }
+        } else if (obstacle.type == Obstacle::CONE) {
+            // Trata cone como um cilindro vertical para evasão conservadora
+            // Considera apenas distância horizontal ao eixo e faixa de altura
+            glm::vec2 horizDiff = glm::vec2(position.x - obstacle.position.x,
+                                            position.z - obstacle.position.z);
+            float horizDist = glm::length(horizDiff);
+            float avoidDistance = obstacle.radius + 2.5f; // leve margem
+            bool withinHeight = position.y >= 0.0f && position.y <= obstacle.height + 0.5f;
 
-        if (distance < avoidDistance && distance > 0.001f) {
-            // Força de repulsão inversamente proporcional à distância
-            glm::vec3 avoidForce = glm::normalize(diff) / distance;
-            avoidForce *= maxForce * 2.0f;  // Força forte de evasão
-            acceleration += avoidForce;
+            if (withinHeight && horizDist < avoidDistance && horizDist > 0.001f) {
+                glm::vec2 dir2 = horizDiff / horizDist; // direção horizontal para fora
+                glm::vec3 avoidDir = glm::vec3(dir2.x, 0.0f, dir2.y);
+                glm::vec3 avoidForce = avoidDir * (maxForce * 2.2f);
+                acceleration += avoidForce;
+            }
         }
     }
 }
@@ -238,18 +253,26 @@ void Boid::calculateBanking(float deltaTime) {
     if (glm::length(velocity) > 0.001f) {
         glm::vec3 forward = glm::normalize(velocity);
         glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
-        glm::vec3 right = glm::normalize(glm::cross(forward, up));
+        float verticalDot = fabs(glm::dot(forward, up));
+        // Se muito próximo do eixo vertical, evita cálculo de banking instável
+        if (verticalDot > 0.95f) {
+            // Relaxa gradualmente para zero em voo vertical
+            bankAngle *= 0.9f;
+            return;
+        }
 
-        // Projeção da aceleração no eixo lateral
+        glm::vec3 right = glm::cross(forward, up);
+        float rightLen = glm::length(right);
+        if (rightLen < 0.001f) {
+            bankAngle *= 0.9f;
+            return;
+        }
+        right /= rightLen;
+
         float lateralAccel = glm::dot(currentAcceleration, right);
-
-        // Ângulo de banking proporcional à aceleração lateral
-        // Ajuste o fator multiplicador para controlar a intensidade
-        float targetBankAngle = lateralAccel * 2.0f;
-        targetBankAngle = glm::clamp(targetBankAngle, -glm::radians(45.0f), glm::radians(45.0f));
-
-        // Suaviza a transição do ângulo de banking
+        float targetBankAngle = glm::clamp(lateralAccel * 2.0f, -glm::radians(45.0f), glm::radians(45.0f));
         bankAngle = glm::mix(bankAngle, targetBankAngle, 0.1f);
+        if (!std::isfinite(bankAngle)) bankAngle = 0.0f;
     }
 }
 
@@ -262,18 +285,29 @@ glm::mat4 Boid::getModelMatrix() {
     // Rotação para apontar na direção da velocidade
     if (glm::length(velocity) > 0.001f) {
         glm::vec3 forward = glm::normalize(velocity);
-        glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+        glm::vec3 globalUp = glm::vec3(0.0f, 1.0f, 0.0f);
+        float verticalDot = fabs(glm::dot(forward, globalUp));
 
-        // Yaw: rotação em torno do eixo Y (horizontal)
-        float yaw = atan2(forward.x, forward.z);
-        model = glm::rotate(model, yaw, glm::vec3(0.0f, 1.0f, 0.0f));
+        // Usa componente horizontal para yaw sempre
+        glm::vec3 horiz = glm::vec3(forward.x, 0.0f, forward.z);
+        if (glm::length(horiz) < 0.001f) {
+            // Se totalmente vertical, mantém orientação horizontal anterior (não disponível aqui) => sem yaw
+        } else {
+            horiz = glm::normalize(horiz);
+            float yaw = atan2(horiz.x, horiz.z);
+            model = glm::rotate(model, yaw, glm::vec3(0.0f, 1.0f, 0.0f));
+        }
 
-        // Pitch: rotação para cima/baixo
-        float pitch = asin(forward.y);
-        model = glm::rotate(model, -pitch, glm::vec3(1.0f, 0.0f, 0.0f));
+        // Pitch apenas se não quase vertical para evitar giro de 90° que pode causar clipping
+        if (verticalDot < 0.95f) {
+            float pitch = asin(glm::clamp(forward.y, -1.0f, 1.0f));
+            model = glm::rotate(model, -pitch, glm::vec3(1.0f, 0.0f, 0.0f));
+        }
 
-        // Banking (Roll): rotação no eixo de movimento
-        model = glm::rotate(model, bankAngle, glm::vec3(0.0f, 0.0f, 1.0f));
+        // Banking (roll) aplicado somente se ângulo válido
+        if (std::isfinite(bankAngle)) {
+            model = glm::rotate(model, bankAngle, glm::vec3(0.0f, 0.0f, 1.0f));
+        }
     }
 
     // Escala

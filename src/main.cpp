@@ -311,9 +311,8 @@ void processInput(GLFWwindow* window) {
     if (keys[GLFW_KEY_E])
         targetControl.y -= 1.0f;
 
-    if (glm::length(targetControl) > 0.001f) {
-        flock->controlTarget(glm::normalize(targetControl), deltaTime);
-    }
+    // Envie sempre o controle; sem input o líder deve parar
+    flock->controlTarget(targetControl, deltaTime);
 }
 
 void renderGround(Shader& shader, const glm::mat4& view, const glm::mat4& projection) {

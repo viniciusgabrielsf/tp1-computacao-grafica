@@ -29,6 +29,10 @@ Flock::Flock(int initialBoidCount, float bounds)
     // Cones (além da torre central)
     obstacles.push_back({glm::vec3(20.0f, 0.0f, -20.0f), 3.0f, 10.0f, Obstacle::CONE});
 
+    // Torre central como obstáculo (cone no (0,0,0))
+    // Usa raio=5.0 e altura=worldBounds para combinar com renderização
+    obstacles.push_back({glm::vec3(0.0f, 0.0f, 0.0f), 5.0f, worldBounds, Obstacle::CONE});
+
     std::cout << "Flock initialized with " << boids.size() << " boids" << std::endl;
 }
 
@@ -171,11 +175,20 @@ glm::vec3 Flock::getFlockVelocity() const {
 
 void Flock::controlTarget(glm::vec3 direction, float deltaTime) {
     if (!targetBoid) return;
+    // Controle direto do líder: sem entrada => parado; com entrada => move
+    const float leaderSpeed = 10.0f; // velocidade constante enquanto há entrada
 
-    // Aplica força de controle na direção desejada
-    // O deltaTime será aplicado no update() do boid, não aqui
-    float controlForce = 2.0f;
-    targetBoid->acceleration += direction * controlForce;
+    float len = glm::length(direction);
+    if (len < 0.001f) {
+        // Sem input: para imediatamente
+        targetBoid->velocity = glm::vec3(0.0f);
+        targetBoid->acceleration = glm::vec3(0.0f);
+        return;
+    }
+
+    glm::vec3 dir = direction / len; // normaliza
+    targetBoid->velocity = dir * leaderSpeed;
+    targetBoid->acceleration = glm::vec3(0.0f);
 }
 
 void Flock::addObstacle(const Obstacle& obstacle) {
